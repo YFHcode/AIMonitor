@@ -1,0 +1,97 @@
+import streamlit as st
+import requests
+import os
+from openai import AzureOpenAI
+
+# Set Azure OpenAI credentials
+os.environ["AZURE_OPENAI_ENDPOINT"] = "https://aimonitor.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview"
+os.environ["AZURE_OPENAI_API_KEY"] = "G16hSGUSobigVno4mvTYkOsR6PfBH3dLT28qknqgt4YIM1SmMMn5JQQJ99BBACYeBjFXJ3w3AAABACOGH8eC"
+
+# Initialize OpenAI client
+client = AzureOpenAI(
+    azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
+    api_key=os.environ["AZURE_OPENAI_API_KEY"],
+    api_version="2024-08-01-preview"
+)
+
+# Function to fetch Google search results using SerpAPI
+def get_google_search_results(query, time_filter, max_results=50, api_key="7bd3fa1bd4a4cbe1452cee498d65f1a4669dd235b5f021bca1e406ae917ca727"):
+    base_url = "https://serpapi.com/search"
+    params = {
+        "q": query,
+        "num": max_results,
+        "api_key": api_key,
+        "engine": "google"
+    }
+
+    if time_filter:
+        params["tbs"] = f"qdr:{time_filter}"
+    
+    response = requests.get(base_url, params=params)
+    if response.status_code != 200:
+        return []
+    
+    data = response.json()
+    search_results = [result["link"] for result in data.get("organic_results", [])]
+    
+    # Filter out social media links
+    social_media_domains = ["instagram.com", "twitter.com", "linkedin.com", "facebook.com", "tiktok.com"]
+    filtered_results = [url for url in search_results if not any(domain in url for domain in social_media_domains)]
+    
+    return filtered_results[:max_results]
+
+# Function to generate report using Azure OpenAI
+def generate_report(query, urls, time_filter):
+    url_list = "\n".join(urls)
+    time_filter_text = {
+        "h": "hourly", "d": "daily", "w": "weekly", "m": "monthly", "y": "yearly"
+    }.get(time_filter, "periodically")
+    
+    prompt = f"""Our company monitors other companies and gathers {time_filter_text} information about them. 
+    Today, we have information about {query}. Your role is to create a report based solely on the data I provide. 
+    It is strictly forbidden to use any external knowledge (covering all aspects such as strategy, finance, politics, etc.). 
+    The report should not be an introduction but a high-level executive summary for this {time_filter_text}. 
+    Below are the sources of information:
+    {url_list} """
+    
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are a Senior strategy consultant."},
+            {"role": "user", "content": prompt},
+        ]
+    )
+    return response.choices[0].message.content, url_list
+
+# Streamlit UI
+st.title("Strategic Report Generator")
+
+query = st.text_input("Enter a keyword:")
+time_filter = st.selectbox(
+    "Select Time Filter:",
+    ["None", "h", "d", "w", "m", "y"],
+    format_func=lambda x: "None" if x == "None" else {
+        "h": "Past Hour", "d": "Past Day", "w": "Past Week",
+        "m": "Past Month", "y": "Past Year"
+    }[x]
+)
+
+if st.button("Generate Report"):
+    if not query:
+        st.warning("Please enter a keyword.")
+    else:
+        time_filter = None if time_filter == "None" else time_filter
+        urls = get_google_search_results(query, time_filter)
+
+        if urls:
+            st.write(f"### Found {len(urls)} Relevant Sources")
+            with st.spinner("Generating report..."):
+                report, url_list = generate_report(query, urls, time_filter)
+                st.subheader("Executive Summary")
+                st.write(report)
+                
+                st.subheader("Sources")
+                for url in urls:
+                    st.write(f"- [{url}]({url})")
+        else:
+            st.write("No results found.")
