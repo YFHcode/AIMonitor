@@ -38,7 +38,7 @@ Ensure you have Python installed along with the required dependencies.
    ```
 4. Run the application:
    ```bash
-   streamlit run app.py
+   streamlit run app-AI-Monitor.py
    ```
 
 ## Usage
