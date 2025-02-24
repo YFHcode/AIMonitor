@@ -98,6 +98,10 @@ time_filter = st.selectbox(
     }[x]
 )
 
+# Initialize session state for history
+if "report_history" not in st.session_state:
+    st.session_state.report_history = []
+
 if st.button("Generate Report"):
     if not query:
         st.warning("Please enter a keyword.")
@@ -116,5 +120,18 @@ if st.button("Generate Report"):
                 st.subheader("Sources")
                 for url in urls:
                     st.write(f"- [{url}]({url})")
+
+                # Save report in session state
+                st.session_state.report_history.append({"query": query, "report": report})
         else:
             st.write("No results found.")
+
+# Sidebar for history
+st.sidebar.title("Report History")
+if st.session_state.report_history:
+    for i, entry in enumerate(st.session_state.report_history):
+        if st.sidebar.button(f"View Report {i+1}: {entry['query']}"):
+            st.subheader(f"Previous Report: {entry['query']}")
+            st.write(entry["report"])
+else:
+    st.sidebar.write("No reports generated yet.")
