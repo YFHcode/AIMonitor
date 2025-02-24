@@ -14,14 +14,35 @@ client = AzureOpenAI(
     api_version="2024-08-01-preview"
 )
 
+# Full Country list
+COUNTRIES = {
+    "Andorra": "AD", "United Arab Emirates": "AE", "Afghanistan": "AF", "Antigua and Barbuda": "AG",
+    "Anguilla": "AI", "Albania": "AL", "Armenia": "AM", "Netherlands Antilles": "AN", "Angola": "AO",
+    "Antarctica": "AQ", "Argentina": "AR", "American Samoa": "AS", "Austria": "AT", "Australia": "AU",
+    "Aruba": "AW", "Azerbaijan": "AZ", "Bosnia and Herzegovina": "BA", "Barbados": "BB", "Bangladesh": "BD",
+    "Belgium": "BE", "Burkina Faso": "BF", "Bulgaria": "BG", "Bahrain": "BH", "Burundi": "BI", "Benin": "BJ",
+    "Bermuda": "BM", "Brunei Darussalam": "BN", "Bolivia": "BO", "Brazil": "BR", "Bahamas": "BS", "Bhutan": "BT",
+    "Botswana": "BW", "Belarus": "BY", "Belize": "BZ", "Canada": "CA", "Switzerland": "CH", "China": "CN",
+    "Colombia": "CO", "Costa Rica": "CR", "Cuba": "CU", "Denmark": "DK", "Dominican Republic": "DO",
+    "Ecuador": "EC", "Egypt": "EG", "Spain": "ES", "Finland": "FI", "France": "FR", "United Kingdom": "GB",
+    "Germany": "DE", "Greece": "GR", "Hong Kong": "HK", "Hungary": "HU", "India": "IN", "Indonesia": "ID",
+    "Ireland": "IE", "Italy": "IT", "Japan": "JP", "Kenya": "KE", "Malaysia": "MY",
+    "Mexico": "MX","Morocco": "MA", "Netherlands": "NL", "New Zealand": "NZ", "Nigeria": "NG", "Norway": "NO",
+    "Pakistan": "PK", "Philippines": "PH", "Poland": "PL", "Portugal": "PT", "Russia": "RU", "Saudi Arabia": "SA",
+    "Singapore": "SG", "South Africa": "ZA", "South Korea": "KR", "Sweden": "SE", "Thailand": "TH",
+    "Turkey": "TR", "Ukraine": "UA", "United States": "US", "Venezuela": "VE", "Vietnam": "VN"
+}
+
 # Function to fetch Google search results using SerpAPI
-def get_google_search_results(query, time_filter, max_results=50, api_key="7bd3fa1bd4a4cbe1452cee498d65f1a4669dd235b5f021bca1e406ae917ca727"):
+def get_google_search_results(query, time_filter, country, max_results=50, api_key="7bd3fa1bd4a4cbe1452cee498d65f1a4669dd235b5f021bca1e406ae917ca727"):
     base_url = "https://serpapi.com/search"
+    query = f'"{query}"'  # Adding quotes for exact search
     params = {
         "q": query,
         "num": max_results,
         "api_key": api_key,
-        "engine": "google"
+        "engine": "google",
+        "gl": country  # Country filter
     }
 
     if time_filter:
@@ -67,6 +88,7 @@ def generate_report(query, urls, time_filter):
 st.title("Strategic Report Generator")
 
 query = st.text_input("Enter a keyword:")
+country = st.selectbox("Select a country:", list(COUNTRIES.keys()))
 time_filter = st.selectbox(
     "Select Time Filter:",
     ["None", "h", "d", "w", "m", "y"],
@@ -81,7 +103,8 @@ if st.button("Generate Report"):
         st.warning("Please enter a keyword.")
     else:
         time_filter = None if time_filter == "None" else time_filter
-        urls = get_google_search_results(query, time_filter)
+        country_code = COUNTRIES.get(country, "US")  # Default to US if not provided
+        urls = get_google_search_results(query, time_filter, country_code)
 
         if urls:
             st.write(f"### Found {len(urls)} Relevant Sources")
