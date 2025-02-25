@@ -9,7 +9,7 @@ serpapi_key = st.secrets["serpapi"]["api_key"]
 
 # Initialize OpenAI client
 client = AzureOpenAI(
-    azure_endpoint=azure_openai-endpoint,
+    azure_endpoint=azure_openai_endpoint,
     api_key=azure_openai_api_key,
     api_version="2024-08-01-preview"
 )
