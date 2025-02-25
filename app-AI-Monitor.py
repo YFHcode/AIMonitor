@@ -2,15 +2,15 @@ import streamlit as st
 import requests
 import os
 from openai import AzureOpenAI
-
-# Set Azure OpenAI credentials
-os.environ["AZURE_OPENAI_ENDPOINT"] = "https://aimonitor.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview"
-os.environ["AZURE_OPENAI_API_KEY"] = "G16hSGUSobigVno4mvTYkOsR6PfBH3dLT28qknqgt4YIM1SmMMn5JQQJ99BBACYeBjFXJ3w3AAABACOGH8eC"
+# Load secrets securely
+azure_openai_endpoint = st.secrets["azure_openai"]["endpoint"]
+azure_openai_api_key = st.secrets["azure_openai"]["api_key"]
+serpapi_key = st.secrets["serpapi"]["api_key"]
 
 # Initialize OpenAI client
 client = AzureOpenAI(
-    azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-    api_key=os.environ["AZURE_OPENAI_API_KEY"],
+    azure_endpoint=azure_openai-endpoint,
+    api_key=azure_openai_api_key,
     api_version="2024-08-01-preview"
 )
 
@@ -34,7 +34,7 @@ COUNTRIES = {
 }
 
 # Function to fetch Google search results using SerpAPI
-def get_google_search_results(query, time_filter, country, max_results=50, api_key="7bd3fa1bd4a4cbe1452cee498d65f1a4669dd235b5f021bca1e406ae917ca727"):
+def get_google_search_results(query, time_filter, country, max_results=50, api_key=serpapi_key):
     base_url = "https://serpapi.com/search"
     query = f'"{query}"'  # Adding quotes for exact search
     params = {
