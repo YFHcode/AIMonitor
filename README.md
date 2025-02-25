@@ -17,29 +17,69 @@ AIMonitor is a strategic report generation tool that utilizes **SerpAPI** for fe
 - **Requests** (For API calls)
 
 ## Installation & Setup
+
 ### Prerequisites
 Ensure you have Python installed along with the required dependencies.
 
 ### Steps
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/AIMonitor.git
+   git clone https://github.com/YFHcode/AIMonitor.git
    cd AIMonitor
    ```
+
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-3. Set up your environment variables:
-   ```bash
-   export AZURE_OPENAI_ENDPOINT="your_azure_openai_endpoint"
-   export AZURE_OPENAI_API_KEY="your_azure_openai_api_key"
-   export SERPAPI_KEY="your_serpapi_key"
-   ```
-4. Run the application:
+
+3. **Set up API Keys using Streamlit Secrets**
+   - Create a `.streamlit/` directory in your project:
+     ```bash
+     mkdir -p .streamlit
+     ```
+   - Inside `.streamlit/`, create a `secrets.toml` file:
+     ```bash
+     nano .streamlit/secrets.toml
+     ```
+   - Add the following:
+     ```toml
+     [azure_openai]
+     endpoint = "https://aimonitor.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview"
+     api_key = "your-azure-api-key"
+
+     [serpapi]
+     api_key = "your-serpapi-key"
+     ```
+   - **Important:** Do **NOT** commit `secrets.toml` to GitHub. Add it to `.gitignore`:
+     ```bash
+     echo ".streamlit/secrets.toml" >> .gitignore
+     ```
+
+4. **Run the application locally**
    ```bash
    streamlit run app-AI-Monitor.py
    ```
+
+## Deployment on Streamlit Cloud
+1. **Push your code to GitHub** (without `secrets.toml`):
+   ```bash
+   git add .
+   git commit -m "Deploying AIMonitor"
+   git push origin main
+   ```
+2. **Go to Streamlit Cloud** → [https://share.streamlit.io/](https://share.streamlit.io/)
+3. **Deploy your repository** and go to **Settings (⚙️) → Secrets**.
+4. **Manually add your API keys in the Secrets UI**:
+   ```toml
+   [azure_openai]
+   endpoint = "https://aimonitor.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview"
+   api_key = "your-azure-api-key"
+
+   [serpapi]
+   api_key = "your-serpapi-key"
+   ```
+5. **Restart your app** on Streamlit Cloud.
 
 ## Usage
 1. Enter a **keyword** related to the topic you want to monitor.
@@ -54,4 +94,3 @@ Ensure you have Python installed along with the required dependencies.
 
 ## License
 This project is licensed under the MIT License.
-
